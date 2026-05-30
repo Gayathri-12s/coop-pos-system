@@ -8,6 +8,9 @@ function POSPage() {
   const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
   const [paymentMethod, setPaymentMethod] = useState('')
+  const [saleData, setSaleData] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
 
   useEffect(() => {
     fetchProducts()
@@ -57,6 +60,46 @@ function POSPage() {
     ])
   }
 }
+const increaseQuantity = (productId) => {
+
+  const updatedCart = cart.map(item =>
+
+    item.id === productId
+      ? {
+          ...item,
+          quantity: item.quantity + 1
+        }
+      : item
+  )
+
+  setCart(updatedCart)
+}
+
+const decreaseQuantity = (productId) => {
+
+  const updatedCart = cart
+    .map(item =>
+
+      item.id === productId
+        ? {
+            ...item,
+            quantity: item.quantity - 1
+          }
+        : item
+    )
+    .filter(item => item.quantity > 0)
+
+  setCart(updatedCart)
+}
+
+const removeFromCart = (productId) => {
+
+  const updatedCart = cart.filter(
+    item => item.id !== productId
+  )
+
+  setCart(updatedCart)
+}
 const subtotal = cart.reduce(
     
 
@@ -69,6 +112,31 @@ const subtotal = cart.reduce(
 const vatAmount = subtotal * 0.05
 
 const grandTotal = subtotal + vatAmount
+const filteredProducts = products.filter(
+
+  product => {
+
+    const matchesSearch =
+
+      product.name
+        .toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        )
+
+    const matchesCategory =
+
+      selectedCategory === 'All'
+        ? true
+        : product.category === selectedCategory
+
+    return (
+      matchesSearch &&
+      matchesCategory
+    )
+  }
+
+)
 const handleCheckout = async () => {
 
   const token = localStorage.getItem(
@@ -98,7 +166,7 @@ console.log('TOKEN:', token)
     )
 
     console.log(response.data)
-
+    setSaleData(response.data)
     alert('Sale completed successfully')
 
   } catch (error) {
@@ -113,53 +181,257 @@ console.log('TOKEN:', token)
   alert('Checkout failed')
 }
 }
+if (saleData) {
+
   return (
-    <div>
 
-      <h1>POS Page</h1>
+  <div className="container mt-5">
 
-    <div
-  style={{
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '15px',
+    <div className="card shadow p-4 mx-auto"
+         style={{ maxWidth: '500px' }}>
+
+     <h2 className="text-center">
+   SUPERMARKET
+</h2>
+
+<p className="text-center text-muted">
+  Abu Dhabi, UAE
+</p>
+
+      <hr />
+
+      <h2>
+        {saleData.formatted_sale_id}
+      </h2>
+
+      <hr />
+
+      <p>
+        Payment:
+        {' '}
+        {saleData.payment_method}
+      </p>
+
+      <p>
+        Subtotal:
+        {' '}
+        AED {saleData.subtotal}
+      </p>
+
+      <p>
+        VAT:
+        {' '}
+        AED {saleData.vat_amount}
+      </p>
+
+    <h3 className="text-success text-center">
+  AED {saleData.total}
+</h3>
+
+      <hr />
+
+      <p>
+        Thank You For Shopping
+      </p>
+      <button
+        className="btn btn-primary w-100"
+  onClick={() => {
+
+    setSaleData(null)
+
+    setCart([])
+
+    setPaymentMethod('')
   }}
 >
+  New Sale
+</button>
 
-  {products.map((product) => (
+    </div>
+    </div>
+  )
+}
+  return (
+   <div className="container-fluid p-4">
 
-    <ProductCard
-      key={product.id}
-      product={product}
-       onAddToCart={addToCart}
-    />
+    <h1 className="bg-dark text-white p-3 rounded mb-4 text-center">
+  COOP POS SYSTEM
+</h1>
+   <input
+  className="form-control mb-3"
+  type="text"
+  placeholder="Search products..."
+  value={searchTerm}
+  onChange={(e) =>
+    setSearchTerm(e.target.value)
+  }
+/>
+<div>
 
-  ))}
+  <button
+    className="btn btn-outline-primary me-2 mb-2"
+    onClick={() =>
+      setSelectedCategory('All')
+    }
+  >
+    All
+  </button>
+
+  <button
+    className="btn btn-outline-primary me-2 mb-2"
+    onClick={() =>
+      setSelectedCategory('Grocery')
+    }
+  >
+    Grocery
+  </button>
+
+  <button
+  className="btn btn-outline-primary me-2 mb-2"
+    onClick={() =>
+      setSelectedCategory('Dairy')
+    }
+  >
+    Dairy
+  </button>
+
+  <button
+  className="btn btn-outline-primary me-2 mb-2"
+    onClick={() =>
+      setSelectedCategory('Produce')
+    }
+  >
+    Produce
+  </button>
+
+  <button
+  className="btn btn-outline-primary me-2 mb-2"
+    onClick={() =>
+      setSelectedCategory('Beverages')
+    }
+  >
+    Beverages
+  </button>
+
+  <button
+  className="btn btn-outline-primary me-2 mb-2"
+    onClick={() =>
+      setSelectedCategory('Snacks')
+    }
+  >
+    Snacks
+  </button>
 
 </div>
-<h2>Cart</h2>
+<div className="row">
+
+  <div className="col-md-8">
+    <h3 className="mb-3">
+  Products
+</h3>
+
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '15px',
+      }}
+    >
+
+      {filteredProducts.map((product) => (
+
+        <ProductCard
+        
+          key={product.id}
+          product={product}
+          onAddToCart={addToCart}
+        />
+
+      ))}
+
+    </div>
+
+  </div>
+
+<div className="col-md-4">
+
+  <div className="card shadow p-3">
+
+    <h3 className="mb-3">
+      🛒 Shopping Cart
+    </h3>
 
 {cart.map(item => (
 
-  <div key={item.id}>
+ <div
+  key={item.id}
+  className="d-flex justify-content-between align-items-center mb-2 p-2 border rounded"
+>
 
-    {item.name} x {item.quantity}
+  <div>
+    <strong>{item.name}</strong>
+    <br />
+    Qty: {item.quantity} | AED {item.price}
+  </div>
+
+  <div>
+
+    <button
+      className="btn btn-sm btn-outline-danger"
+      onClick={() =>
+        decreaseQuantity(item.id)
+      }
+    >
+      -
+    </button>
+
+    <button
+      className="btn btn-sm btn-outline-success mx-1"
+      onClick={() =>
+        increaseQuantity(item.id)
+      }
+    >
+      +
+    </button>
+
+    <button
+      className="btn btn-sm btn-danger"
+      onClick={() =>
+        removeFromCart(item.id)
+      }
+    >
+      Remove
+    </button>
 
   </div>
+
+</div>
 
 ))}
 <hr />
 
-<h3>
-  Subtotal: AED {subtotal.toFixed(2)}
-</h3>
-<h3>
-  VAT (5%): AED {vatAmount.toFixed(2)}
-</h3>
 
-<h2>
-  Total: AED {grandTotal.toFixed(2)}
-</h2>
+
+<div className="mt-3">
+
+  <p>
+    <strong>Subtotal:</strong>
+    {' '}
+    AED {subtotal.toFixed(2)}
+  </p>
+
+  <p>
+    <strong>VAT (5%):</strong>
+    {' '}
+    AED {vatAmount.toFixed(2)}
+  </p>
+
+  <h4 className="text-success">
+    Total: AED {grandTotal.toFixed(2)}
+  </h4>
+
+</div>
+<div className="mt-4">
 
 <h3>Payment Method</h3>
 
@@ -188,10 +460,15 @@ console.log('TOKEN:', token)
   />
   Card
 </label>
+</div>
 <br />
 <br />
 
+
 <button
+
+  className="btn btn-success w-100"
+
   onClick={handleCheckout}
   disabled={
     cart.length === 0 ||
@@ -200,6 +477,9 @@ console.log('TOKEN:', token)
 >
   Checkout
 </button>
+    </div>
+    </div>
+    </div>
     </div>
   )
 }

@@ -4,30 +4,41 @@ function ProductCard({
 }) {
 
   return (
+
     <div
-     onClick={() => onAddToCart(product)}
+      className="card shadow-sm h-100"
+      onClick={() => onAddToCart(product)}
       style={{
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        padding: '15px',
-        backgroundColor: '#ffffff',
-        cursor: 'pointer',
+        cursor: 'pointer'
       }}
     >
-      <h3>{product.name}</h3>
 
-      <p>
-        AED {product.price}
-      </p>
+      <div className="card-body">
 
-      <p>
-        Category: {product.category}
-      </p>
+        <h4 className="card-title">
+          {product.name}
+        </h4>
 
-      <p>
-        Stock: {product.stock_quantity}
-      </p>
+        <h5 className="text-success">
+          AED {product.price}
+        </h5>
+
+        <p className="mb-2">
+          <strong>Category:</strong>
+          {' '}
+          {product.category}
+        </p>
+
+        <p className="mb-0">
+          <strong>Stock:</strong>
+          {' '}
+          {product.stock_quantity}
+        </p>
+
+      </div>
+
     </div>
+
   )
 }
 
